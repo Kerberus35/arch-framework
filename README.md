@@ -60,31 +60,39 @@ $ mkfs.btrfs -L btrfs /dev/mapper/luks
 ### Create BTRFS subvolumes
 
 ```
-# mount /dev/mapper/luks /mnt
-# btrfs sub create /mnt/@
-# btrfs sub create /mnt/@swap
-# btrfs sub create /mnt/@home
-# btrfs sub create /mnt/@pkg
-# btrfs sub create /mnt/@snapshots
-# umount /mnt
+$ mount /dev/mapper/luks /mnt
+$ btrfs sub create /mnt/@
+$ btrfs sub create /mnt/@swap
+$ btrfs sub create /mnt/@home
+$ btrfs sub create /mnt/@pkg
+$ btrfs sub create /mnt/@snapshots
+$ umount /mnt
 ```
 
 ### Mount subvolumes and create root folder structure
 
 ```
-# mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvol=@ /dev/mapper/luks /mnt
-# mkdir -p /mnt/{boot,home,var/cache/pacman/pkg,.snapshots,btrfs}
-# mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvol=@home /dev/mapper/luks /mnt/home
-# mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvol=@pkg /dev/mapper/luks /mnt/var/cache/pacman/pkg
-# mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvol=@snapshots /dev/mapper/luks /mnt/.snapshots
-# mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvolid=5 /dev/mapper/luks /mnt/btrfs
+$ mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvol=@ /dev/mapper/luks /mnt
+$ mkdir -p /mnt/{boot,home,var/cache/pacman/pkg,.snapshots,btrfs}
+$ mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvol=@home /dev/mapper/luks /mnt/home
+$ mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvol=@pkg /dev/mapper/luks /mnt/var/cache/pacman/pkg
+$ mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvol=@snapshots /dev/mapper/luks /mnt/.snapshots
+$ mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvolid=5 /dev/mapper/luks /mnt/btrfs
+```
+### Mount the EFI partition
+
+```
+# mount /dev/sda1 /mnt/boot
 ```
 
 ### Create swap
+Create swap file:
 
 ```
-btrfs filesystem mkswapfile --size 16g --uuid clear /swap/swapfile
-swapon /swap/swapfile
+$ cd /mnt/btrfs/@swap
+$ btrfs filesystem mkswapfile --size 16g --uuid clear .swapfile
+$ swapon ./swapfile
+$ cd -
 ```
 
 ## Configuration of the system
@@ -110,5 +118,10 @@ $ genfstab -U /mnt >> /mnt/etc/fstab
 
 ### Setup Arch
 
+Chroot into the new installation
+
+```
+$ arch-chroot /mnt/
+```
 
 
