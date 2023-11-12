@@ -231,17 +231,18 @@ $ cd .. && rm -r yay
 ```
 
 ```
-$ sudo pacman -S alacritty tmux firefox pipewire ntfs-3g fish chromium wget curl neofetch libreoffice-still linux-utils kdenlive syncthing remmina thunderbird keepass virtualbox audacity
+$ sudo pacman -S alacritty tmux firefox pipewire ntfs-3g fish chromium wget curl neofetch libreoffice-still linux-utils kdenlive syncthing remmina thunderbird keepass virtualbox audacity qbittorrent vlc htop calibre python3
 $ sudo pacman -S pulseaudio alsa-utils pavucontrol alsamixer
 $ sudo pacman -S wayland sddm xorg-xwayland xorg-xlsclients qt5-wayland glfw-wayland plasma kde-applications plasma-wayland-session
-$ sudo pacman -S libva-mesa-driver mesa lm_sensors tlp powertop 
+$ sudo pacman -S libva-mesa-driver mesa lm_sensors tlp powertop
 $ sudo systemctl enable sddm
 $ sudo systemctl enable NetworkManager
 ```
 
 Install from AUR
 ```
-$ yay -S freetube-bin spotify vscodium-bin f5vpn ventoy-bin anki ttf-ms-fonts protonvpn syncthingtray units zenpower3-dkms amdgpu_top 
+$ yay -S freetube-bin spotify vscodium-bin f5vpn ventoy-bin anki ttf-ms-fonts protonvpn syncthingtray units zenpower3-dkms amdgpu_top
+$ yay -S php81 php81-fpm php81-xml php81-mysql php81-pdo php81-xml 
 ```
 
 Browser profile not on SSD
