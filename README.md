@@ -1,10 +1,10 @@
 # Framework AMD Arch setup
 Framework AMD Arch BTRFS snapshots systemd LUKS KDE Wayland
 
-# Make ISO
+## Make ISO
 https://archlinux.org/download/
 
-# SSH access during set-up
+## SSH access during set-up
 
 ```sh
 passwd
@@ -13,7 +13,7 @@ ip addr
 ```
 Connect to IP
 
-# Partitioning
+## Partitioning
 
 GUID Partition Table (GPT) 
 
@@ -30,62 +30,85 @@ cfdisk /dev/nvme0n1
 ```
 And create above partitions
 
-# LUKS setup
+## LUKS setup
+
+Default settings other than doublecheck (verify-passhphrase). We wont be able to beat rubber hose cryptanalysis...
 
 ```
-cryptsetup --hash sha512 --use-random --verify-passhphrase luksFormat /dev/nvme0n1p2
+cryptsetup --verify-passhphrase luksFormat /dev/nvme0n1p2
 Are you sure? YES
 Enter passhphrase (twice)
 ```
 
-The `/` partition being encrypted, we will open the LUKS container on `/dev/nvme0n1p2`
+The `/` partition being encrypted, open the LUKS container on `/dev/nvme0n1p2`
 disk and name it `cryptlvm`:
 
 ```
-cryptsetup open /dev/nvme0n1p2 cryptlvm
+cryptsetup open /dev/nvme0n1p2 luks
 Enter passhphrase
 ```
-The decrypted container is now available at `/dev/mapper/cryptlvm`.
-
-# LVM setup
-
-#### Create a physical volume on top of the opened LUKS container
-
-```
-$ pvcreate /dev/mapper/cryptlvm
-```
-
-#### Add the previously created physical volume to a volume group
-
-```
-$ vgcreate vg /dev/mapper/cryptlvm
-```
-
-#### Create the root logical volume on the volume group
-
-<!-- TODO: See if it is necessary because of swapfile -->
-```
-$ lvcreate -l 100%FREE vg -n root
-```
+The decrypted container is now available at `/dev/mapper/luks`.
+No need for LVM as we do not expect other disks to be added. 
 
 ### Formatting the filesystem
 
 ```
 $ mkfs.fat -F32 /dev/nvme0n1p1
-$ mkfs.btrfs -L btrfs /dev/mapper/vg-root
+$ mkfs.btrfs -L btrfs /dev/mapper/luks
 ```
 
-### Btrfs subvolumes
-
-Subvolumes are part of the filesystem with its own and independnet file/directory
-hierarchy, where each subvolume can share file extents.
-
-#### Create Btrfs subvolumes
+### Create BTRFS subvolumes
 
 ```
-$ mount /dev/mapper/vg-root /mnt
-$ btrfs subvolume create /mnt/root
-$ btrfs subvolume create /mnt/home
-$ umount /mnt
+# mount /dev/mapper/luks /mnt
+# btrfs sub create /mnt/@
+# btrfs sub create /mnt/@swap
+# btrfs sub create /mnt/@home
+# btrfs sub create /mnt/@pkg
+# btrfs sub create /mnt/@snapshots
+# umount /mnt
 ```
+
+### Mount subvolumes and create root folder structure
+
+```
+# mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvol=@ /dev/mapper/luks /mnt
+# mkdir -p /mnt/{boot,home,var/cache/pacman/pkg,.snapshots,btrfs}
+# mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvol=@home /dev/mapper/luks /mnt/home
+# mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvol=@pkg /dev/mapper/luks /mnt/var/cache/pacman/pkg
+# mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvol=@snapshots /dev/mapper/luks /mnt/.snapshots
+# mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvolid=5 /dev/mapper/luks /mnt/btrfs
+```
+
+### Create swap
+
+```
+btrfs filesystem mkswapfile --size 16g --uuid clear /swap/swapfile
+swapon /swap/swapfile
+```
+
+## Configuration of the system
+
+### Update the mirrors
+
+```
+$ pacman -S reflector
+$ reflector --threads 8 --protocol http --protocol https --verbose --sort rate --country Netherlands --save /etc/pacman.d/mirrorlist
+```
+
+### Installation of the base packages
+
+```
+$ pacstrap /mnt base base-devel linux linux-firmware lvm2 sudo man-db linux-tools git fwupd sudo btrfs-progs amd-ucode nano
+```
+
+### Generate a fstab file
+
+```
+$ genfstab -U /mnt >> /mnt/etc/fstab
+```
+
+### Setup Arch
+
+
 
