@@ -107,7 +107,7 @@ $ reflector --threads 8 --protocol http --protocol https --verbose --sort rate -
 ### Installation of the base packages
 
 ```
-$ pacstrap /mnt base base-devel linux linux-firmware lvm2 sudo man-db linux-tools git fwupd sudo btrfs-progs amd-ucode nano
+$ pacstrap /mnt base base-devel linux linux-firmware sudo man-db linux-tools git fwupd sudo btrfs-progs amd-ucode nano
 ```
 
 ### Generate a fstab file
@@ -131,8 +131,111 @@ $ ln -sf /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime
 $ hwclock --systohc
 ```
 
+### Setup Localization
+Edit /etc/locale.gen and uncomment en_US.UTF-8 UTF-8 and other needed UTF-8 locales. Generate the locales by running:
 
+```
+# locale-gen
+```
 
+Create the locale.conf(5) file, and set the LANG variable (LANG=en_US.UTF-8) accordingly:
 
+```
+/etc/locale.conf
+```
 
+### Network configuration
+
+Install and enable network management daemon:
+
+```
+$ pacman -S networkmanager
+$ systemctl enable NetworkManager
+$ echo Framework > /etc/hostname
+```
+
+Edit `/etc/hosts`:
+
+```
+127.0.0.1		localhost
+::1					localhost
+127.0.1.1		ThinkPad.localdomain	ThinkPad
+```
+
+### Set the root passsword
+
+```
+$ passwd
+```
+
+### Create the main user
+
+```
+$ useradd -mG storage,wheel -s /bin/bash someone
+$ passwd someone
+```
+
+Finally, change the `/etc/sudoers` file according to the config that you want
+to deal with `sudo` command.
+
+### Create a initial ramdisk environment
+
+```
+$ nano /etc/mkinitcpio.conf
+```
+
+Edit the `HOOKS` field:
+
+```
+...
+HOOKS=(base systemd autodetect udev keyboard sd-vconsole modconf block encrypt filesystems btrfs resume)
+...
+```
+
+Finally, recreate the `initramfs `image:
+
+```
+mkinitcpio -P
+```
+
+## Setup the boot manager
+
+### Install `systemd-boot` into the EFI system partition
+
+```
+bootctl install
+```
+
+### Configuring the loader
+
+On `/boot/loader/loader.conf`insert this:
+
+```
+default arch
+timeout 10
+console-mode max
+editor no
+```
+
+### Adding the loader
+
+Insert this to `/boot/loader/entries/arch.conf`:
+
+```
+title Arch Linux
+linux /vmlinuz-linux
+initrd /amd-ucode.img
+initrd /initramfs-linux.img
+options rd.luks.name=$(blkid /dev/nvme0n1p2 -s UUID -o value)=cryptlvm rd.luks.options=discard root=/dev/mapper/luks resume=/dev/mapper/luks rootfstype=btrfs resume_offset=$(btrfs inspect-internal map-swapfile -r /mnt/btrfs/@swap/.swapfile) quiet nowatchdog splash rw
+```
+
+### Finalise
+
+```
+$ exit
+$ umount -R /mnt
+$ reboot
+```
+
+## Post installation
 
