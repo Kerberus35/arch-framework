@@ -116,12 +116,23 @@ $ pacstrap /mnt base base-devel linux linux-firmware lvm2 sudo man-db linux-tool
 $ genfstab -U /mnt >> /mnt/etc/fstab
 ```
 
-### Setup Arch
+## Setup Arch
 
 Chroot into the new installation
 
 ```
 $ arch-chroot /mnt/
 ```
+
+### Setup timezone
+
+```
+$ ln -sf /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime
+$ hwclock --systohc
+```
+
+
+
+
 
 
