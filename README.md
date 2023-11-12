@@ -1,2 +1,2 @@
 # arch-framework
-Framework AMD Arch BTRFS snapshots systemd LUKS
+Framework AMD Arch BTRFS snapshots systemd LUKS KDE Wayland
