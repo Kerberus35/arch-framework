@@ -79,10 +79,11 @@ $ mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvol=@pkg /dev/m
 $ mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvol=@snapshots /dev/mapper/luks /mnt/.snapshots
 $ mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvolid=5 /dev/mapper/luks /mnt/btrfs
 ```
+
 ### Mount the EFI partition
 
 ```
-# mount /dev/sda1 /mnt/boot
+# mount /dev/nvme0n1p1 /mnt/boot
 ```
 
 ### Create swap
@@ -200,33 +201,11 @@ mkinitcpio -P
 
 ## Setup the boot manager
 
-### Install `systemd-boot` into the EFI system partition
+### Install GRUB into the EFI system partition
 
 ```
-bootctl install
-```
-
-### Configuring the loader
-
-On `/boot/loader/loader.conf`insert this:
-
-```
-default arch
-timeout 10
-console-mode max
-editor no
-```
-
-### Adding the loader
-
-Insert this to `/boot/loader/entries/arch.conf`:
-
-```
-title Arch Linux
-linux /vmlinuz-linux
-initrd /amd-ucode.img
-initrd /initramfs-linux.img
-options rd.luks.name=$(blkid /dev/nvme0n1p2 -s UUID -o value)=cryptlvm rd.luks.options=discard root=/dev/mapper/luks resume=/dev/mapper/luks rootfstype=btrfs resume_offset=$(btrfs inspect-internal map-swapfile -r /mnt/btrfs/@swap/.swapfile) quiet nowatchdog splash rw
+pacman --needed -Sy grub efibootmgr
+grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/mnt/boot
 ```
 
 ### Finalise
@@ -238,4 +217,8 @@ $ reboot
 ```
 
 ## Post installation
+
+```
+# sudo pacman -S .... volgt
+```
 
