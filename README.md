@@ -241,7 +241,7 @@ $ sudo systemctl enable NetworkManager
 
 Install from AUR
 ```
-$ yay -S freetube-bin spotify vscodium-bin f5vpn ventoy-bin anki ttf-ms-fonts protonvpn syncthingtray units zenpower3-dkms amdgpu_top
+$ yay -S freetube-bin spotify vscodium-bin f5vpn ventoy-bin anki ttf-ms-fonts protonvpn syncthingtray units zenpower3-dkms amdgpu_top dropbox
 $ yay -S php81 php81-fpm php81-xml php81-mysql php81-pdo php81-xml 
 ```
 
