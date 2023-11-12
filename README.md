@@ -65,6 +65,7 @@ $ btrfs sub create /mnt/@
 $ btrfs sub create /mnt/@swap
 $ btrfs sub create /mnt/@home
 $ btrfs sub create /mnt/@pkg
+$ btrfs sub create /mnt/@var_log
 $ btrfs sub create /mnt/@snapshots
 $ umount /mnt
 ```
@@ -73,9 +74,10 @@ $ umount /mnt
 
 ```
 $ mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvol=@ /dev/mapper/luks /mnt
-$ mkdir -p /mnt/{boot,home,var/cache/pacman/pkg,.snapshots,btrfs}
+$ mkdir -p /mnt/{boot,home,var/cache/pacman/pkg,var/log,.snapshots,btrfs}
 $ mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvol=@home /dev/mapper/luks /mnt/home
 $ mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvol=@pkg /dev/mapper/luks /mnt/var/cache/pacman/pkg
+$ mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvol=@var_log /dev/mapper/luks /mnt/var/log
 $ mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvol=@snapshots /dev/mapper/luks /mnt/.snapshots
 $ mount -o noatime,nodiratime,compress=lzo,space_cache=v2,ssd,subvolid=5 /dev/mapper/luks /mnt/btrfs
 ```
@@ -204,8 +206,10 @@ mkinitcpio -P
 ### Install GRUB into the EFI system partition
 
 ```
-pacman --needed -Sy grub efibootmgr
+pacman --needed -Sy grub efibootmgr grub-btrfs
 grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/mnt/boot
+grub-mkconfig -o /mnt/boot/grub/grub.cfg
+
 ```
 
 ### Finalise
@@ -218,7 +222,34 @@ $ reboot
 
 ## Post installation
 
+Install AUR client -> yay
 ```
-# sudo pacman -S .... volgt
+$ git clone https://aur.archlinux.org/yay.git
+$ cd yay
+$ makepkg -sri
+$ cd .. && rm -r yay
 ```
+
+```
+$ sudo pacman -S alacritty tmux firefox pipewire ntfs-3g fish chromium wget curl neofetch libreoffice-still linux-utils kdenlive syncthing remmina thunderbird keepass virtualbox audacity
+$ sudo pacman -S pulseaudio alsa-utils pavucontrol alsamixer
+$ sudo pacman -S wayland sddm xorg-xwayland xorg-xlsclients qt5-wayland glfw-wayland plasma kde-applications plasma-wayland-session
+$ sudo pacman -S libva-mesa-driver mesa lm_sensors tlp powertop 
+$ sudo systemctl enable sddm
+$ sudo systemctl enable NetworkManager
+```
+
+Install from AUR
+```
+$ yay -S freetube-bin spotify vscodium-bin f5vpn ventoy-bin anki ttf-ms-fonts protonvpn syncthingtray units zenpower3-dkms amdgpu_top 
+```
+
+Browser profile not on SSD
+```
+$ pacman -S profile-sync-daemon
+$ systemctl --user enable psd --now
+```
+
+TODO:
+https://archlinux.org/packages/extra/any/kernel-modules-hook/
 
