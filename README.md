@@ -1,6 +1,8 @@
 # Framework AMD Arch setup
 Framework AMD Arch BTRFS snapshots systemd LUKS KDE Wayland
 
+(the guide is incomplete but can be used as a general overview)
+
 ## Make ISO
 https://archlinux.org/download/
 
